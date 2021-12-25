@@ -1,0 +1,12 @@
+[submodule "inventory-quarkus"]
+	path = inventory-quarkus
+	url = https://github.com/SaladinoBelisario/inventory-quarkus.git
+[submodule "catalog-spring-boot"]
+	path = catalog-spring-boot
+	url = https://github.com/SaladinoBelisario/catalog-spring-boot.git
+[submodule "gateway-vertx"]
+	path = gateway-vertx
+	url = https://github.com/SaladinoBelisario/gateway-vertx.git
+[submodule "web-nodejs"]
+	path = web-nodejs
+	url = https://github.com/SaladinoBelisario/web-nodejs.git
