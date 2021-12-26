@@ -383,6 +383,245 @@ approaches is business value versus migration time and cost.
 
 # **Kubernetes-Based Software Development**
 
+## **What is Kubernetes?**
+As a container-orchestration platform, its focus is primarily on ensuring that our apps are 
+running correctly, providing out-of-the-box self-healing, recovery, and a powerful API to 
+control this mechanism. You may be wondering now: as a developer, why should I care about 
+Kubernetes if it is so self-proficient? That’s a good question, and maybe a good answer is an 
+analogy: you have a Formula 1 car with autopilot, but if you want to win the race, you need to
+tune and set up your car to compete with all other good ones. The same is true for your apps, 
+which can benefit from all the capabilities offered by the platform to tune them, so they run
+optimally.
+
+### **What Kubernetes does?**
+When you have Kubernetes as a target platform to run your applications, you can rely on an 
+ecosystem of APIs and components put in place to make deployments easier so developers can 
+focus only on the most important part: coding. Kubernetes provides you with a framework to run 
+distributed systems resiliently. In practice, this means you don’t need to reimplement custom 
+solutions when it comes to:
+
+_**Service discovery**_ 
+Kubernetes uses internal DNS resolution to expose your apps; this is automatically assigned and
+can also be used to send the traffic to multiple instances of your app.
+
+_**Load balancing**_ 
+Kubernetes takes care of managing the load on your apps, balancing the traffic, and distributing
+user requests accordingly.
+
+_**Self-healing**_ 
+Kubernetes discovers and replaces failing containers automatically, providing a health check 
+and self-healing mechanism out of the box.
+
+_**Rollout and Rollback**_
+Kubernetes ensures your app is always running consistently at the desired state, providing 
+control to scale up and scale down workloads. In addition, it offers the capability to roll out 
+or rollback to a specific version of your application.
+
+### **What Kubernetes does not do**
+Many headaches that developers usually need to deal with in production are already solved and
+delegated to a platform, whose primary goal is to ensure applications are running. But does 
+that provide all you need for modernizing your apps? Probably not.
+
+The modernization steps toward a cloud native approach are more closely tied to a methodology 
+rather than a specific technology. Once you’ve converted your mindset from building monolithic
+apps to creating microservices, we are in a good position to start thinking big. Nowadays, many
+apps run on cloud platforms targeting Kubernetes, and those are the ones running global-reach
+workloads. Here are some things to consider:
+
+* **Kubernetes doesn’t know how to handle your app**. It can restart it if it fails, but it cannot 
+understand why that is happening, so we need to ensure we have full control of our 
+microservices-based architecture and be able to debug each container. This is particularly 
+important in the case of a large-scale deployment.
+* **Kubernetes doesn’t provide any middleware or application-level services.** Granular 
+discovery services need to be addressed by interacting with Kubernetes API or relying on some 
+service on top of Kubernetes, such as a service mesh framework. There is no ecosystem for 
+developers out of the box.
+* **Kubernetes doesn’t build your app.** You are responsible for providing your app compiled and 
+packaged as a container image or relying on additional components on top of Kubernetes.
+
+## **Container images**
+The first step for you in this journey is to containerize your microservices, so they can be 
+deployed into Kubernetes as a Pod, which is controlled by using a YAML file, invoking the API,
+or using a Kubernetes Java client.
+
+### **Dockerfile**
+Writing a Dockerfile to package our app as a container is pretty straightforward for simple
+use cases.
+
+### **Building Container Images**
+Now you need to create the container image. Docker is a popular open source project to create
+containers; you can download it for your operating system and start using it to build and run
+your containers. Podman is another open source alternative to do this, and it can also generate
+Kubernetes objects.
+
+### **Run Containers**
+Running containers refers to pulling the container images from the container cache to run 
+applications. This process will be isolated by the container runtime (such as Docker or Podman) 
+from the other ones in our workstation, providing a portable application with all dependencies 
+managed inside a container and not in our workstation.
+
+### **Registry**
+As we described in the previous section, container images are stored in a local cache. However,
+if you want to make them available outside your workstation, you need to send them over in some
+convenient way. A container image’s size is generally hundreds of megabytes. That’s why you 
+need a container image registry.
+
+The registry essentially acts as a place to store container images and share them via a process 
+of uploading to (pushing) and downloading from (pulling). Once the image is on another system, 
+the original application contained within it can be run on that system as well.
+
+Registries can be public or private. Popular public registries include Docker Hub and Quay.io.
+They are offered as a SaaS on the internet and allow images to be available publicly with or 
+without authentication. Private registries are usually dedicated to specific users and are not 
+accessible for public usage. However, you may make them available to private environments, such 
+as private Kubernetes clusters.
+
+## **Deploying to Kubernetes**
+Deploying applications to Kubernetes is done by interacting with Kubernetes API to create the
+objects representing the desired state of the app in a Kubernetes cluster. As we discussed, 
+Pods, Services, and Deployments are the minimum objects created to let Kubernetes manage the
+entire application life cycle and connectivity.
+
+Every object in Kubernetes contains the following values:
+
+_**apiVersion**_
+Kubernetes API version used to create this object
+
+_**kind**_
+The object type (e.g. Pod, Service) 
+
+_**metadata**_
+Pieces of information that help uniquely identify the object, such as a name or UID
+
+_**spec**_ 
+The desired state for the object
+
+### **Pod**
+A Pod is a group of one or more containers with shared storage and network resources and a 
+specification for how to run the containers. You can see a representation of
+two Pods in a Kubernetes cluster, with an example IP address assigned by Kubernetes to each of
+them:
+
+![Pod with two containers example](Resources/Pod.PNG "Pods in Kubernetes")
+
+### **Service**
+Kubernetes Services are used to expose an application running on a set of Pods. This is useful
+because a Pod gets a random IP address from the Kubernetes network, which may change if it is
+restarted or moved to another node within a Kubernetes cluster. Services offer a more 
+consistent way to communicate with Pods, acting as a DNS server and load balancer.
+
+A Service is mapped to one or more Pods; it uses the internal DNS to resolve to an internal IP 
+from a mnemonic short hostname (e.g., inventory-quarkus), and balances the traffic to the Pods
+as shown:
+
+![Kubernetes service example](Resources/Service.PNG "Kubernetes Service")
+
+Each Service get its own IP address from a dedicated IP address range, which is different from 
+a Pod's IP address range.
+
+### **Deployment**
+Deployments are Kubernetes objects created for managing an application life cycle. A
+deployment describes a desired state, and Kubernetes will implement it using either a rolling 
+or re-create deployment strategy. The rollout life cycle consists of progressing, complete, and
+failed states. A deployment is progressing while it is performing update tasks, such as
+updating or scaling Pods.
+
+Kubernetes' deployments offer a set of capabilities on top of the basic Pod and Service concepts as 
+listed next:
+
+* Deploy a ReplicaSet or Pod 
+* Update Pods and ReplicaSets 
+* Rollback to previous deployment versions 
+* Scale a deployment 
+* Pause or continue a deployment 
+* Define health checks 
+* Define resources constraints
+
+Managing applications with a Kubernetes deployment includes the way in which an application 
+should be updated. A major benefit of a deployment is the ability to start and stop a set of 
+Pods predictably. There are two strategies for deploying apps in Kubernetes:
+
+_**Rolling update**_ 
+
+  It provides a controlled, phased replacement of the application’s Pods, ensuring that there 
+  are always a minimum number available. This is useful for the business continuity of an
+  application, where the traffic is not routed into a new version of the application until the 
+  health checks (probes) on the desired number of Pods deployed are satisfied.
+
+**_Re-create_** 
+
+  It removes all existing pods before new ones are created. Kubernetes first terminates all 
+  containers from the current version and then starts all new containers simultaneously when the 
+  old containers are gone. This provides downtime for the app, but it ensures there aren’t 
+  multiple versions running at the same time.
+
+## **Kubernetes and Java**
+
+From a Java developer perspective, the first step is to migrate from the monolithic approach 
+to a microservice-based approach. Once that is complete, the next step is to get into the
+Kubernetes context and maximize the benefits this platform offers: API extensibility, a 
+declarative model, and a standardized process where the IT industry is converging.
+
+There are Java frameworks that help developers connect to Kubernetes and convert their apps to
+containers.
+
+### **Jib**
+Jib is an open source framework made by Google to build container images compliant to the Open
+Container Initiative (OCI) image format, without the need of Docker or any container runtime.
+You can create containers even from your Java codebase because it offers a Maven and Gradle
+plug-in for that. This means Java developers can containerize their app without writing and/or 
+maintaining any Dockerfiles, delegating this complexity to Jib.
+
+We see the benefits from this approach as follows:
+
+_**Pure Java**_
+
+No Docker or Dockerfile knowledge is required; simply add Jib as a plug-in, and it will 
+generate the container image for you. The resulting image is commonly referred to as 
+“distroless,” since it doesn’t inherit from any base image.
+
+_**Speed**_
+
+The application is divided into multiple layers, splitting dependencies from classes. There’s 
+no need to rebuild the container image as is necessary for Dockerfiles; Jib takes care of 
+deploying the layers that changed.
+
+_**Reproducibility**_ 
+
+Unnecessary updates are not triggered, as the same contents always generate the same image.
+
+### **JKube**
+Eclipse JKube, a community project supported by the Eclipse Foundation and Red Hat, is another 
+open source Java framework to help with interacting with Kubernetes from a Java developer
+perspective. It supports building container images using Docker/Podman, Jib, and 
+Source-to-Image (S2I). Eclipse JKube also provides a set of tools to deploy automatically to
+Kubernetes and manage the application with helpers for debugging and logging. It comes from
+Fabric8 Maven Plug-in, rebranded and enhanced as a project to target Kubernetes.
+
+As with Jib, JKube provides Zero Configuration mode for a quick ramp-up where opinionated
+defaults will be preselected. It provides Inline Configuration within the plug-in configuration
+using an XML syntax. Furthermore, it provides External Configuration templates of real 
+deployment descriptors, which are enriched by the plug-in. JKube is offered in three forms: 
+
+_**Kubernetes Plug-in**_ 
+
+It works in any Kubernetes cluster, providing either distroless or Dockerfiledriven builds.
+
+_**OpenShift Plug-in**_ 
+
+It works in any Kubernetes or OpenShift cluster, providing either distroless, Dockerfile-driven
+builds, or Source-to-Image (S2I) builds.
+
+_**JKube Kit**_
+
+A toolkit and a CLI to interact with JKube Core, it also acts as a Kubernetes Client and 
+provides an Enricher API to extend Kubernetes manifests.
+
+JKube offers more functionality than Jib; in fact, it can be considered a superset. You can
+do distroless Jib builds, but you can also work with Dockerfile and deploy Kubernetes 
+manifests from Java. In this case, we don’t need to write a Deployment or Service; JKube will 
+take care of building the container and deploy it to Kubernetes.
+
 # **Working with Legacy**
 
 # **Building Kubernetes-Native Applications**
