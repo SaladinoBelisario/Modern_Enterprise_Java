@@ -981,6 +981,204 @@ application and your services.
 
 # **Building Kubernetes-Native Applications**
 
+## **Find the Right Balance Between Scalability and Complexity**
+In an ideal world, all applications would be stateless, and they could scale up independently.
+They wouldn’t crash, and the network links would always be reliable. The reality looks
+different. The migration from monoliths to microservices-based architectures enables cloud 
+native deployments, and we’ve covered some benefits that brings.
+
+Similar to the CAP theorem, **it is very hard to simultaneously provide scalability without 
+increasing the complexity of a system.** That’s why Kubernetes is so helpful because it’s
+ubiquitous, it runs in any cloud, and you can delegate most of this complexity to this
+platform. This lets you focus “just” on app development. On the other hand, **we need to find a
+solution also for stateful apps in the cloud native world**, and we will see that Kubernetes 
+also provides help on this side.
+
+## **Functional Requirements for Modern Architectures**
+Any Java developer should be well aware of Design Patterns from Gang of Four, a masterpiece
+of software engineering where authors define the most-used software design patterns. Kubernetes
+extends this set of patterns, creating a new set of cloud native specific requirements to make
+applications resilient to various loads as shown:
+
+![Functional Requirements for Modern Architectures](Resources/Functional_Req_Modern_Architecture.PNG "Functional Requirements")
+
+### **API-Driven**
+The microservices mantra is “**API first.**” You’ll notice that splitting a monolithic app into a
+bunch of microservices leads to the first challenge: how to let these pieces of software
+communicate with each other? In monoliths, you rely on the app scope of modules, packages. 
+Microservices usually communicate with each other via REST calls, where each one can be either
+producer or consumer of services. This is not the only way to connect your microservices; it’s 
+also a common use case to use queues, messages, or caches. But in general, each microservice
+exposes its primitives or functions through a set of APIs, and this can also be intermediated 
+by an API gateway as we discussed in the Coolstore example.
+
+Kubernetes itself is API-driven software. All core components of the platform such as Pods, 
+Services, and Deployments are manipulated through REST APIs. All operations and communications
+between components and external user commands are REST API calls that the API server handles.
+
+### **Discovery**
+Listing Kubernetes Services and Pods, which represent some microservices, is the first step
+to a real-time inventory of components of our software stack, which additionally helps to
+maintain and extend at runtime applications. Furthermore, Kubernetes enables integration with
+external tools or frameworks for that, such as Service Mesh, which provides service discovery 
+protocol to detect services as they come up.
+
+### **Security and Authorization**
+Another challenge that modern app developers need to take into account is security for the
+entire stack. From the app to the platform, best practices also apply to modern architectures,
+and the complexity and the required effort may rise significantly when there are many services
+to connect, many databases to query, and many endpoints to serve. Again, Kubernetes comes in
+to help.
+
+Kubernetes provides security for the entire ecosystem. Role-based access control (RBAC) and
+fine-grained permission rules are possible. Furthermore, Pods are run by a special user called
+Service Account that has access to the Kubernetes API Server, usually having limited scope 
+to the user’s namespace. Besides, Kubernetes provides a special API to manage passwords 
+and certificates called Secrets. A Secret is a volume mounted into the Pod by the platform at
+runtime, with its value stored into Kubernetes’s database etcd, along with cluster state and 
+configurations.
+
+### **Monitoring**
+**Measuring resource consumption is essential in modern architectures, and ever more so in 
+cloud environments with a pay-per-use consumption model.** It isn’t easy to estimate how many
+computational resources your app will need under stress, and overestimation may increase 
+costs. Kubernetes enables monitoring at the operating system level to application level, with
+its ecosystem of API and tools.
+
+A popular cloud native tool to gather metrics from the platform and the app is **Prometheus**, a 
+time-series database that can export metrics from the Kubernetes cluster and apps using a 
+query language called **PromQL**.
+
+Metrics are also used to help Kubernetes decide when to scale your application up or down
+according to the monitored load on the app. You can drive this scale with custom metrics, such
+as JVM threads or queue size, and make monitoring a proactive tool to empower your services.
+Prometheus also provides alerts and alarms, which are useful to schedule automated actions
+for your applications when they need to react faster.
+
+Java developers can also interact with Prometheus and metrics inside Kubernetes with 
+**Micrometer**, an open source tool that provides a registration mechanism for metrics and core 
+metric types. It is available for any JVM-based workloads, and it is the popular choice for
+both Spring Boot and Quarkus projects to interact with Prometheus and Kubernetes. 
+“Think SLF4J, but for metrics.”
+
+### **Tracing**
+**Observability is another key aspect in modern architectures, and measuring latency between
+REST API calls is an important facet of managing microservices-based apps. It is crucial to
+ensure that the communication is always clear and the latency is minimal.** When the number of
+microservices increases, a small delay in some part of the architecture can result in an 
+acceptable service interruption for the user. In these situations, Kubernetes is helpful for
+debugging the majority of operational problems that arise when moving to a distributed 
+architecture.
+
+**Jaeger is a popular open source tool that connects to Kubernetes to provide observability.** It
+uses distributed tracing to follow the path of a request through different microservices. It 
+provides a visual representation of the call flows through a dashboard, and it is often also 
+integrated with Service mesh. Jaeger is very helpful to developers for monitoring distributed
+transactions, optimizing performance and latency, and performing root cause analysis.
+
+### **Logging**
+A single call in your microservices-based app, such as the Coolstore example, can invoke 
+different services that interact with each other. It’s important to monitor and observe the 
+app, but also to store relevant pieces of information in logs. Your application’s logging
+approach changes with modern apps. While in monoliths we usually rely on multiple log files
+stored in different paths on the disk, usually managed by the application server, distributed
+apps stream logs. As your app can scale up rapidly and move to different nodes or even clouds,
+it makes no sense to access the single instance to retrieve logs; therefore, a distributed log
+system is needed. 
+
+Kubernetes makes logging easy as well. By default, it provides the capability to access a 
+Pod’s logs by reading the application’s standard streams such as STDOUT (Standard Output) and 
+STDERR (Standard Error). Thus, the app should not write logs into a certain path, but send
+logs to standard streams.
+
+Kubernetes also interacts with distributed logging systems such as **Elasticsearch, an open 
+source document-oriented NoSQL database based on Apache Lucene to store logs and events.** 
+Elasticsearch usually comes with a forwarder, such as Fluentd, and a dashboard to visualize 
+logs such as Kibana. Together, this creates **the EFK stack (Elasticsearch, Fluentd, Kibana). 
+With this logging stack, developers consult logs from multiple microservices in an aggregated
+view through the Kibana dashboard, and they are also able to make queries in a query language
+called Kibana Query Language (KQL).**
+
+**Distributed logging is the de facto standard with cloud native apps**, and Kubernetes connects
+and interacts with many offerings such as EFK to provide centralized logging for the whole
+cluster.
+
+### **CI/CD**
+Continuous Integration (CI) is a phase in the software development cycle where code from
+different team members or different features is integrated. This usually involves merging 
+code (integration), building the application (container), and carrying out basic tests, all 
+within an ephemeral environment. 
+
+Continuous Delivery (CD) refers to a set of practices to automate various aspects of delivery
+software. One of these practices is called delivery pipeline, which is an automated process to
+define the steps a change in code or configuration has to go through to reach upper
+environments and eventually production. 
+
+Together, they are often referred to as CI/CD, and it is one of the key technology enablers 
+for DevOps methodology. 
+
+Modern services need to react fast to changes or issues. As we can monitor, trace, and log 
+distributed architectures, we should also be able to update our microservices-based app 
+faster. Pipelines are the best way to deploy apps in production following the phases as 
+shown:
+
+![Continuous integration and delivery](Resources/CI_CD.PNG "CI/CD")
+
+A pipeline is a series of steps, sequential or parallel, that build and test the app in all
+preproduction environments before finally releasing it to production. It can be fully 
+automated or can interact with external tools for manual step approval (e.g., Service Now, 
+JIRA, etc.). **Kubernetes interacts and connects with many external CI/CD tools such as 
+Jenkins, and also provides a native CI/CD subsystem called Tekton.**
+
+## **Debugging Microservices**
+While distributed architectures have plenty of benefits, they also pose some challenges. Even
+if you eventually run your code inside a Kubernetes cluster, you still develop (in general)
+locally where you have your IDE, compilers, etc. There are several ways to explain the
+development cycle. There are two loops, as illustrated:
+
+![Development cycle loops](Resources/Dev_Loops.PNG "Inner and Outer Loops")
+
+The one closer to the developer, called the inner loop, is where you code, test, and debug 
+iteratively. The other loop, further away from the developer, called the outer loop, is where
+your code runs inside a container image you have to build, push, and deploy, and that takes a 
+lot longer. While the outer loop is part of the CI/CD world, the inner loop is where you start
+coding and testing your software before launching a Tekton Pipeline to deploy your application
+into Kubernetes. Debugging microservices is also part of the inner loop.
+
+**Developers can follow different approaches to start debugging microservices:**
+
+* **Using Docker Compose and deploying all the services locally** 
+* **Using minikube, or any local Kubernetes clusters, and deploying all the services there**
+* **Mocking up all the services you interact with**
+
+**Microcks is an open source Kubernetes-native debugging tool for API mocking and testing.** 
+It helps turn API contract, collection, or SoapUI projects into live mocks. It can be a 
+convenient way to develop faster on Kubernetes without dependencies.
+
+### **Port Forwarding**
+Kubernetes offers remote shelling into Pods for quick debugging tasks such as filesystem
+check. Additionally, **you can set up port forwarding between your local machine connected to 
+a Kubernetes cluster and your app running in a Pod. This option is useful when you want to
+connect to a database running in a Pod, attach an administrative web interface you don’t want 
+to expose to the public, or, in this case, attach a debugger to the JVM running our 
+application server.**
+
+By port forwarding the debugging port for the application server, you can attach the debugger
+from your IDE and actually step through the code in the Pod as it is running in real time. 
+Remember, if your app is not in debug mode, you first need to turn on the debug ports.
+
+### **Quarkus Remote Development Mode**
+**Quarkus provides a Remote Development Mode** that allows you to run Quarkus in a container 
+environment such as Kubernetes and have changes made to your local files immediately.This 
+allows you to use Quarkus to connect the live coding features from your local machine to a 
+remote container environment such as Kubernetes.
+
+### **Telepresence**
+**Telepresence is an open source tool that helps debug microservices in Kubernetes.** It runs a 
+single service locally, while connecting that service to a remote Kubernetes cluster.
+Telepresence is programming language-agnostic, providing a convenient way to connect your 
+local environment to any workload running on Kubernetes to debug.
+
 # **Tomorrow’s Solutions: Serverless**
 
 # **References/Bibliography**
