@@ -623,6 +623,361 @@ manifests from Java. In this case, we don’t need to write a Deployment or Serv
 take care of building the container and deploy it to Kubernetes.
 
 # **Working with Legacy**
+We often use the term “legacy system” to describe an old methodology, or technology, or
+application that is not written according to the latest methods or uses an outdated technology
+stack. Admittedly, many of the systems we created early on in our career belong to this
+category. We do know that most of them are still in use. Some of them even paved the way for
+new approaches or even standards that followed them. We usually also imply that those systems
+would need a replacement, which ultimately contributes to the perceived negative connotation.
+Thankfully, this isn’t always true. Legacy also is a beautiful word to describe achievements
+and heritage. Calling something “legacy” doesn’t automatically make it outdated and unusable.
+There are plenty of reasons to keep the legacy systems in place, including:
+
+* The system works as designed, and there is no need to change. 
+* The business processes implemented are no longer known or documented, and replacing them is 
+expensive.
+* The cost for replacing a system is higher than the benefit of keeping it unchanged.
+
+## **Managing Legacy**
+Every successful journey begins with a first step. The first step for an application
+migration journey is the assessment of the existing applications. We assume that you know
+the company-wide goals and directives. We can map them into assessment categories now. Another 
+source for assessment categories is technical requirements—for example, existing blueprints or 
+recommended master solutions or framework versions. Building and updating this list of assessment
+categories should be a recurring task that becomes part of your governance process. 
+Ultimately, you can derive migration criteria from these assessment criteria and use them as 
+decision-making cornerstones for your modernization journey.
+
+### **Assessing Applications for Migration**
+When assessing a migration or modernization effort, it is essential to consider the specific 
+challenges that motivate or influence your organization. Some examples of challenges that 
+organizations might face include: 
+
+_**Limited budgets for development**_ 
+
+Development teams need to become more efficient, and their velocity has to increase. Instead 
+of working with complex specifications, they aim to switch to lightweight frameworks and
+prebuilt functionalities. Modernizations should be usually scheduled as part of an ongoing 
+development or maintenance project.
+
+_**Lack of in-house skills**_
+
+The team skills for existing in-house technologies are decreasing. Examples of this are host
+programming or even earlier versions of Enterprise Java specifications that are no longer 
+taught or state-of-the-art. Changing existing systems that use older technologies might mean 
+needing to add specific skills for the development project.
+
+_**Perceived risks**_ 
+
+Following a famous proverb popularized around 1977, “If it ain’t broken, don’t fix it,” we do
+see a lot of perceived risks to changing well-established and running software. The reasons for
+this can be numerous and range from knowledge issues about the system to fear of stopped
+production in factories. These risks need to be addressed individually and mitigated through 
+suitable actions in the migration plan.
+
+_**No known predictable process**_
+
+Navigating the unknown can be a considerable challenge. Having a proven and repeatable process
+for modernization efforts in place that all parties respect and follow is critical for success.
+
+_**Real effort estimation**_ 
+
+Estimating migration efforts should not be magic. Unfortunately, many companies have a minimal
+idea about the genuine efforts to modernize Enterprise Java applications. Following a 
+predictable and optimized approach will remove this challenge.
+
+Turning these challenges into actionable items for your assessment can look like this:
+
+* Predicting the level of effort and cost 
+* Scheduling application migrations and handling conflicts 
+* Identifying all potential risks at a code, infrastructure, process, or knowledge level
+* Predicting the return on investment to make the business case 
+* Identifying and mitigating risks to the business 
+* Minimizing disruption to existing business operations
+
+An open source and straightforward way of gathering and managing all relevant information comes
+from the **Konveyor project**. It combines a set of tools that aim at helping with modernization
+and migration onto Kubernetes. The **Konveyor subproject Forklift** provides the ability to migrate
+virtual machines to KubeVirt with minimal downtime. The subproject Crane concentrates on 
+migrating applications between Kubernetes clusters. Also part of the suite is **Move2Kube** to 
+help accelerate the replatforming of Swarm and Cloud Foundry-based applications to Kubernetes.
+
+For application modernization in particular, Konveyor offers the **Tackle project**. It 
+assesses and analyzes applications for refactoring into containers and provides a standard
+inventory.
+
+#### Tackle Application Inventory
+This allows users to maintain their portfolio of applications, link them to the business
+services they support, and define their interdependencies. The Application Inventory uses an 
+extensible tagging model to add metadata, which is a great way to link migration categories, as
+discussed earlier. The Application Inventory is used to select an application for an assessment
+by Pathfinder.
+
+#### Tackle Pathfinder
+This is an interactive, questionnaire-based tool that assesses the suitability of applications 
+for modernization, so they can be deployed in containers on an enterprise Kubernetes platform.
+**Pathfinder generates reports about an application’s suitability for Kubernetes, including the 
+associated risk, and creates an adoption plan. Pathfinder does this based on the information 
+present in the application inventory and additional assessment questions.** If an application 
+depends on a direct host system connection, it might disqualify this particular application 
+for a migration to Kubernetes because it would overload the host parts. Some examples of 
+assessment questions are:
+
+* **Are third-party vendor components supported in containers?** 
+* **Is the application under active development?** 
+* **Does the application have any legal requirements (e.g., PCI, HIPAA)?** 
+* **Does the application provide metrics?**
+
+#### Tackle Controls
+Controls are a collection of entities that add different values to the Application Inventory 
+and the Pathfinder assessment. They comprise business services, stakeholders, stakeholder 
+groups, job functions, tag types, and tags. In addition, you can capture company- or 
+project-specific attributes by implementing your own entities. This will filter your
+Application Inventory, for example, all applications used by a certain “job function” to
+identify all applications used by the human resources department.
+
+#### Tackle DiVA
+Finally, DiVA is a data-centric application analysis tool. As a successor to the project
+Windup, it is the most exciting project to look at if you want to assess individual
+applications. It focuses on the traditional monolithic application and currently supports 
+Servlets and Spring Boot applications. You can import a set of application source files
+(Java/XML), and DiVA then provides the following:
+
+* Service entry (exported API) inventory 
+* Database inventory 
+* Transaction inventory 
+* Code-to-Database dependencies (call graphs) 
+* Database-to-Database dependencies 
+* Transaction-to-Transaction dependencies 
+* Transaction refactoring recommendations
+
+**DiVA is currently under active development, and the incorporation of the original Windup
+project isn’t finished yet.** However, it still gives you a solid foundation for your
+modernization efforts. Additionally, it presents an excellent opportunity to contribute your 
+findings and become part of a larger community dedicated to automating migrations.
+
+#### Migration Toolkit for Applications
+MTA assembles tools that support large-scale Enterprise Java application modernization and
+migration projects across many transformations and use cases. You can import your application
+binary or archives into it, and it automatically performs code analysis, including the
+application portfolio, application dependencies, migration challenges, and migration effort
+estimation in the form of story points. Initially it was designed to support Java EE server 
+migrations (e.g., WebSphere or WebLogic to JBoss EAP). Still, it has a highly extensible rule
+set mechanism that allows developers to create their own set of rules or even adapt existing 
+ones to their needs. Today it also covers Spring Boot to Quarkus migrations.
+
+**Some patterns MTA can detect include the following:**
+
+* **Proprietary libraries** 
+* **Proprietary configurations** 
+* **Service locators** 
+* **Web services** 
+* **EJB descriptors** 
+* **Deprecated Java code** 
+* **Transaction managers** 
+* **Injection frameworks** 
+* **Thread pooling mechanisms** 
+* **Timer services** 
+* **WAR/EAR descriptors** 
+* **Static IP addresses**
+
+MTA and DiVA are two potent tools that help us identify overall technical debt, resulting in 
+a classification of migration needs and risks. However, they do not allow us to identify the 
+functionality that should be migrated or modernized first. For this, we need to take a deeper
+look into the application design and functionality.
+
+## **Migration Approaches**
+The aforementioned tools and assessments will help you on your journey to identify the most
+suitable applications and services. Now it’s time to dig deeper into the strategies and
+challenges of a single application.
+
+### **Protecting Legacy (Replatform)**
+With only one or two modules needing a business refresh or added functionality, the most 
+straightforward way is to focus on the two modules and keep as much as possible of the
+existing application, making it runnable on modern infrastructure. Besides, changes of the 
+relevant modules, this also involves a reevaluation of the runtime, libraries, or even target
+infrastructure while touching as little code as possible.
+
+This can be achieved by simply containerizing the application and databases and modifying
+relevant modules of a well-architected monolith or extracting certain functionality completely 
+and reintegrating it to a partly distributed system.
+
+#### Service to application
+Once you’ve extracted certain functionality, the most pressing question is how to integrate
+the remaining monolith with the newly extracted service. Assuming that you switch to a 
+container runtime, you should use an API Gateway to load balance and switch traffic on a URL 
+basis.
+
+Another approach is to use an HTTP proxy. It is essential to have the proxy up in production 
+before you even try to extract parts of the monolith. Ensure it does not break the existing 
+monolith and take some time to push the new service into production regularly, even without it 
+being used by end users. Gradually switch over by redirecting traffic if everything looks good.
+
+For more simple service to monolith interactions, you can even think about implementing a
+simple JAX-RS direct communication. This approach is only suitable when you work with very few
+services, though. Make sure to treat the extracted service as an integration system from the
+perspective of the monolith.
+
+All three approaches (API gateway, HTTP proxy, and JAX-RS interface) are a pathway to your 
+first successful microservice.
+
+Interception is a potentially dangerous path: if you start building a custom protocol 
+translation layer that is shared by multiple services, you risk adding too much intelligence
+to the shared proxy. This design approach leads away from independent microservices and 
+becomes a more service-oriented architecture with too much intelligence in the routing layer. A
+better alternative is the so-called Sidecar pattern, which basically describes an additional
+container in the Pod. Rather than placing custom proxy logic in a shared layer, it becomes
+part of the new service. As a Kubernetes sidecar, it becomes a runtime binding and can serve 
+legacy clients and new clients.
+
+#### Database to databases
+Once we have identified the functional boundary and the integration method, we need to decide 
+how to approach database separation. While monolith applications typically rely on a single 
+large database, each extracted service should operate on its own data. The correct way to solve
+this puzzle again depends on the existing data layout and transactions.
+
+A relatively easy first step is to separate the tables necessary for the service into a 
+read-only view and a write table and adjust the flow of the monolith to use an interface for 
+both read and write operations. These interfaces can more easily be abstracted in a later step
+into service access. This option requires changes to the monolith application only and should
+have minimal impact on the existing codebase. We can move the table into a separate database 
+and adjust the dependent queries in the next step.
+
+### **Build Something New (Refactor)**
+If, for whatever reasons, you’ve reached a fork in the road where you decide to reimplement
+and refactor your complete system into a new distributed architecture, you are most likely
+thinking about synergies and ways to keep effort small and predictable. Given the complexity of
+a full microservices stack, this isn’t an easy task. One critical factor with this approach is
+team knowledge. After many years of development on an Enterprise Java application server, a 
+team should profit from continuous API and standards knowledge. There are various ways to 
+implement services on the JVM that all help teams with reusing the most critical 
+functionalities we all already know from Enterprise Java/Jakarta EE standards. Let’s discuss 
+some of these methods for implementing services on the JVM.
+
+#### MicroProfile
+MicroProfile was created in 2016 and quickly joined the Eclipse foundation. The primary
+purpose of MicroProfile is to create a Java Enterprise framework for implementing portable 
+microservices in a vendor-neutral way. MicroProfile is composed of a vendor-agnostic
+programming model and configuration and services such as tracing, fault tolerance, health, and 
+metrics. MicroProfile API components are built upon the model of Jakarta EE, making a 
+transition to microservices more natural for Java developers. You can reuse the existing
+knowledge of Jakarta EE you’ve already accumulated in your career. MicroProfile defines 12 
+specifications as shown:
+
+![MicroProfile 12 specifications](Resources/MicroProfile.PNG "MicroProfile specification")
+
+and the component model underneath uses a subset of the existing Jakarta EE standards. 
+Compared to the full Jakarta EE specification, the more heavyweight specifications are
+missing. Most relevant for larger monolithic applications are Enterprise JavaBeans (EJB) and 
+Jakarta XML Web Services.
+
+There are various implementations of the MicroProfile specifications available: Open
+Liberty, Thorntail, Payara Server, TomEE, SmallRye, etc. As the MicroProfile relies on 
+principles and components close to the Jakarta EE Web Profile, it is comparably easy to
+migrate existing applications.
+
+#### Quarkus
+Quarkus is a relatively new member of the so-called microservices frameworks. It is a full 
+stack, Kubernetes-native Java framework for JVMs and native compilation. It is optimized 
+specifically for containers and constrained runtime environments. Its primary purpose is to be
+an ideal runtime for serverless, cloud, and Kubernetes environments.
+
+It works with popular Java standards, frameworks, and libraries like Eclipse MicroProfile, 
+Spring Boot, Apache Kafka, RESTEasy (JAX-RS), Hibernate ORM (JPA), Infinispan, Camel, and many
+more.
+
+The dependency injection solution is based on CDI (Contexts and Dependency Injection) coming 
+from Jakarta EE, making it compatible with established component models. An interesting part is
+the extension framework, which helps expand functionality to configure, boot, and integrate 
+company-specific libraries into your application. It runs on JVMs and supports GraalVM 
+(a general-purpose virtual machine for many languages).
+
+#### Component models to services
+One of the most common questions among developers is how to migrate existing component models
+of Enterprise Java applications into microservices. Commonly, this question refers to 
+Enterprise Java Beans or CDI Beans, especially the container-managed persistence beans
+(before EJB3), which need to be re-created on a Java Persistence API (JPA) basis. It's strongly 
+recommended checking if the underlying data/ object mapping is still accurate and suitable for 
+the new requirements and re-creating it entirely. This is not the most time- and cost-consuming
+part of modernization. **Typically, the more challenging parts are the coded business requirements.**
+While CDI Beans are technically part of MicroProfile-compatible implementations, the decision
+of whether a simple code migration is appropriate depends on the new business requirements. It
+is essential to look for existing code transaction boundaries to ensure no downstream resource
+needs to be involved. A general recommendation is to reuse as little source code as possible. 
+The reason here is mainly the different approaches in system design between the two 
+technologies. While we got away with a halfway modularized monolith, this isn’t possible with 
+microservices anymore. Taking extra care to define the bounded contexts will pay off for the 
+performance and design of the final solution.
+
+#### Spring applications to services
+We can take a similar approach with applications following a different programming framework
+like Spring. While it will technically be easy to update and copy existing implementations, 
+the drawbacks stay the same. In particular, it might be helpful for Spring-based development
+teams to use compatibility APIs in different frameworks like Quarkus.
+
+Quarkus' Spring API compatibility includes Spring DI, Spring Web, and Spring Data JPA. 
+Additional Spring APIs are partially supported like Spring Security, Spring Cache, Spring 
+Scheduled, and Spring Cloud Config. The Spring API compatibility in Quarkus is not intended 
+to be a complete Spring platform to rehost existing Spring applications. The intent is to
+offer enough Spring API compatibility to develop new applications with Quarkus.
+
+## **Challenges**
+
+### **Avoiding Dual-Writes**
+Once you build a few microservices, you quickly realize that the most challenging part about 
+them is data. As part of their business logic, microservices often have to update their local
+data store. At the same time, they also need to notify other services about the changes that 
+happened. This challenge is not so evident in the world of monolithic applications, nor on 
+legacy-distributed transactions operating on one data model. This situation isn’t easy to
+resolve. With a switch to distributed applications, you most likely lose consistency. This is
+described in the CAP theorem.
+
+Modern distributed applications use an event bus, like Apache Kafka, to transport data between
+services. Migrating your transactions from two-phase commit (2PC) in your monolith to a
+distributed world will significantly change the way your application behaves and reacts to 
+failures. You need a way to control long-running and distributed transactions.
+
+### **Long-Running Transactions**
+The Saga pattern offers a solution to dual writes and long-running transactions. **While the 
+Outbox pattern solves the more straightforward interservice communication problem, it is 
+insufficient to solve the more complex, long-running, distributed business transactions use
+case.** The latter requires executing multiple operations across multiple services with a 
+consistent all-or-nothing semantic. Every multistep business process can be an example of 
+this when split out across multiple services. The shopping cart application needs to generate
+confirmation emails and print a shipping label in the inventory. All actions must be carried
+out together or not at all. In the legacy world, or with a monolithic architecture, you might 
+not be aware of this problem as the coordination between the modules is done in a single 
+process and a single transactional context. **The distributed world requires a different approach.**
+
+**The Saga pattern offers a solution to this problem** by splitting up an overarching business 
+transaction into multiple local database transactions, which are executed by the participating
+services. Generally, there are two ways to implement distributed sagas:
+
+* Choreography: In this approach, one participating service sends a message to the next one 
+after it has executed its local transaction.
+* Orchestration: In this approach, one central coordinating service coordinates and invokes 
+the participating services. Communication between the participating services might be either 
+synchronous, via HTTP or gRPC, or asynchronous, via messaging such as Apache Kafka.
+
+### **Removing Old Code Too Quickly**
+As soon as we extract a service, we want to get rid of the old source code, maintenance 
+costs, and duplicate development. But be careful. You can look at the old code as a reference 
+and test changes in behavior against both code bases. It might also be helpful from time to
+time to check the timing of the newly created service. A recommendation is to run them side by 
+side for a defined period and compare the results. After this, you can remove the old
+implementation.
+
+## **Integration Aspects**
+Traditional monoliths have a solid relationship with complex integration logic. This is
+mainly proxied behind session facades or integrated with data synchronization logic. **Every 
+single system integrated into the overarching business process needs to be treated as a 
+separate service.** You can apply the same principles when extracting parts of the data from the
+existing data model and do this step by step. **Another approach is to treat your integration 
+logic as a service from the very beginning.** A method that was primarily designed to support 
+microservices is Camel K. It builds on the foundation of the well-known Apache Camel 
+integration library and wraps integration routes into containers or better individual 
+services. This way, you can separate the complete integration logic of your monolithic 
+application and your services.
 
 # **Building Kubernetes-Native Applications**
 
