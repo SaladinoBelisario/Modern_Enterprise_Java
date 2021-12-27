@@ -1181,6 +1181,143 @@ local environment to any workload running on Kubernetes to debug.
 
 # **Tomorrow’s Solutions: Serverless**
 
+## **What Is Serverless?**
+**The main differentiator between the deployment model that we discussed in Kubernetes and the
+serverless model is the so-called scale-to-zero approach**. With this approach, an application 
+is automatically launched on demand when called, and idle when not used. This execution model 
+is also called event-driven, and it is the core foundation of serverless. We discuss
+event-driven serverless architectures later in this chapter.
+
+### **Architectural Evolution**
+The serverless model is not good for all use cases. In general, any asynchronous, concurrent,
+easy-to-parallelize-into-independent-units-of-work application is a good fit for this model. 
+If you look at the next diagram, you can see how the microservices-based architectures 
+evolution started from a monolithic applications approach using the service-oriented 
+architectures (SOA) model, and it is now evolving again into a new model of functions.
+
+![Architectural Evolution towards serverless model](Resources/Arch_Evo.PNG "Architectural Evolution")
+
+These functions represent a minimal computing unit that accomplishes a specific scope or task. 
+Examples are:
+
+* Processing web hooks 
+* Data transformation (image, video) 
+* PDF generation 
+* Single-page apps for mobile devices 
+* Chatbots
+
+With this approach, you can focus on convenience, as it is generally offered as _best-effort_. 
+Failures are tolerated, and short actions are preferred. That’s why the **serverless model is
+not good for use cases such as real-time applications, long-running tasks, or contexts where 
+reliability and/or atomicity are key.**
+
+## **Use Cases**
+
+### **AI, Data Science and ML**
+The serverless model helps avoid common headaches for capacity planning for
+projects, as it mitigates overprovisioning and underprovisioning, thereby reducing the IT
+cost of idle resources. With serverless, all of the resources consumed are tailored to the 
+actual usage as the applications start only when invoked, and there’s no need to preallocate
+or measure-and-update hardware resources. 
+
+**This is very important when you have to analyze in real time a large amount of data, and
+that’s why serverless is gaining lots of attention from data scientists and ML experts, as the
+functions that can process data for analysis are flexible and leave a minimal footprint. On 
+the other hand, serverless doesn’t pair well with all the design principles of existing ML 
+frameworks. A certain amount of tolerance is also required, in particular for processes that
+may take longer such as model training.**
+
+### **Edge Computing and IoT**
+Edge and IoT devices are everywhere. From vocal assistants to home automation, nowadays nearly
+every item in our house can be connected to the internet, talking to some controller 
+application. As a developer, you may be responsible for either the backend logic or the
+device application logic.
+
+An example of this scenario for Java developers comes from the Quarkus for IoT project, which
+aims to collect pollution data from sensors with Raspberry Pi devices using Quarkus and 
+containers both on the device and the server-side backend. The latter is running a serverless
+application to provide on-demand high scalability of the huge amount of sensor data that may
+come in some bursty way.
+
+The project also offers a very good reference on how IoT architectures should be implemented 
+on top of Red Hat OpenShift, as shown:
+
+![Quarkus for IoT project architecture](Resources/Quarkus_IOT.PNG "Quarkus for IoT")
+
+## **Knative: Serverless for Kubernetes**
+**Serverless can be considered the engine of functions as a service (FaaS)**, which is a more 
+convenient way for developers to package and deploy apps. Often, particularly with public
+clouds, serverless and FaaS fit together, since packaging apps in containers is also
+automated. **However, a scale-to-zero app is not necessarily a function. As we discussed, 
+serverless is not just a prerogative of public clouds. For instance, anyone can also adopt 
+this model on any Kubernetes cluster thanks to an open source project called Knative.**
+
+**Knative enables serverless on Kubernetes**, supporting event-driven scale-to-zero applications.
+It provides a higher level of abstraction for common app use cases.
+
+There are two main components in Knative:
+
+**_Knative Serving_** 
+
+  Takes care of scale-to-zero, creating all Kubernetes resources needed (e.g., Pod, Deployment, Service, Ingress)
+
+_**Knative Eventing**_
+
+  A subscription, delivery, and management component for handling events oncluster and off-cluster (e.g., Kafka messages, external services)
+
+## **Event-Driven Serverless Architectures**
+Events are everywhere. An HTTP request can trigger the start of an application that can be 
+idling when not used, which is consistent with the serverless execution model. But there are
+plenty of events out there, such as a Kafka message, a database stream, or any event from 
+Kubernetes, that an application may want to subscribe to.
+
+A popular pattern in this scenario is the publish-subscribe messaging pattern where many 
+senders can send messages to an entity on the server, often called a topic, and receivers 
+can subscribe to said topic to get messages. According to the serverless model, your 
+application can be registered and connected to process incoming events. One example for 
+Kubernetes is the Knative Eventing component, which implements CloudEvents, a specification 
+for describing event data from multiple protocols and formats (such as Kafka, AMQP, and MQTT) 
+in a common way.
+
+With Knative Eventing, event producers and event consumers are independent. A Knative Service 
+is triggered by a source of events through a broker, as you can see:
+
+![Knative Eventing architecture](Resources/Knative_Eventing.PNG "Knative Eventing")
+
+**The goal of the eventing framework is to decouple everything. The sender doesn’t directly
+call the subscriber or even know how many subscribers there are. Instead, brokers and triggers
+handle the communication.**
+
+## **Function as a Service for Java Applications**
+We previously discussed how Knative Serving helps to reduce the complexity of maintaining
+multiple Kubernetes objects, and how scale-to-zero helps optimize resource usage by scaling
+down and scaling up applications on demand when needed. But there is another layer of
+abstraction that helps with automatically building and deploying the application following 
+the serverless model: the FaaS model, which we introduced earlier.
+
+FaaS is an event-driven computing execution model where developers write apps that are 
+automatically deployed in containers fully managed by a platform, then executed on demand 
+following the scale-to-zero model. As a developer, you don’t have to write anything like a
+Kubernetes manifest with this model. You can simply write the application logic and let the
+platform package the application as a container and deploy it on the cluster as a 
+scale-to-zero serverless app.
+
+Popular public cloud serverless solutions such as **AWS Lambda, Azure Functions, or Google
+Cloud Run provide a convenient SDK to start developing functions written in the most popular 
+programming languages**, to be packaged and deployed in the FaaS model. **There are also open 
+source solutions available, such as Apache OpenWhisk or Fn project, that implement FaaS with
+Docker.**
+
+### **Functions Deployment for Java Applications**
+Functions are a piece of code delivered according to the serverless model and are portable
+between different infrastructure configurations. The life cycle of a function is described in
+the following image starting with code writing, as well as specification and metadata. The
+building phase automatically happens afterward, and the deployment publishes the function in 
+the platform. This enables a mechanism of updates that will trigger a new build and a new 
+publish when a new change is needed.
+
+![Functions deployment model](Resources/Functions_Deployment.PNG "Functions deployment")
+
 # **References/Bibliography**
 
 > [1]
