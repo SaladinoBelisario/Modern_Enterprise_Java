@@ -2,6 +2,22 @@
 
 # **Table of contents**
 
+- [**Introduction**](#introduction)
+  - [**Enterprise Development Today**](#enterprise-development-today)
+  - [**History of Java EE**](#history-of-java-ee)
+  - [**Designing Software for a Scalable Enterprise**](#designing-software-for-a-scalable-enterprise)
+    - [**Domain-Driven Design**](#domain-driven-design)
+    - [**Service Characteristics**](#service-characteristics)
+    - [**Microservices Best Practices**](#microservices-best-practices)
+    - [**Independently Deployable and Fully Contained**](#independently-deployable-and-fully-contained)
+    - [**Crosscutting Concerns**](#crosscutting-concerns)
+  - [**Java EE and Microservices**](#java-ee-and-microservices)
+    - [**Migration Approaches**](#migration-approaches)
+  - [**Microservices Design Pattern**](#microservices-design-pattern)
+    - [**Common Principles**](#common-principles)
+    - [**Aggregator Pattern**](#aggregator-pattern)
+    - [**Proxy Pattern**](#proxy-pattern)
+    - [**Pipeline Pattern**](#pipeline-pattern)
 - [**The Path to Cloud Native Java**](#the-path-to-cloud-native-java)
   - [**Example App**](#example-app)
     - [**Inventory microservice**](#inventory-microservice)
@@ -84,9 +100,467 @@
   - [**Function as a Service for Java Applications**](#function-as-a-service-for-java-applications)
     - [**Functions Deployment for Java Applications**](#functions-deployment-for-java-applications)
 
+
 # **Introduction**
 
+## **Enterprise Development Today**
+Innovation and constant improvement are the drivers behind enterprises and enterprise-grade 
+projects. Without innovation, there will be outdated and expensive infrastructure components
+(e.g., host systems) that are kept alive way longer than the software they are running was 
+designed for.
 
+Many traditional enterprises have become strongly business-centric and mostly treat IT and
+operations as cost centers. The goal of providing homogenous IT services was mostly reached 
+by overly focusing on IT architectures, information formats, and technology selection processes
+to produce a standard platform for application operations. This produced a dangerous comfort
+zone that siphons attention away from the real value of business software: the business 
+domains and relevant processes whose standardization and optimization promise a much higher
+payback than just operational optimizations.
+
+## **History of Java EE**
+Traditionally, Java EE applications followed the core pattern defined in the book Core
+J2EE Patterns and were separated into three main layers: presentation, business, and 
+integration. The presentation layer was packaged in Web Application Archives (WARs) while
+business and integration logic went into separate Java Archives (JARs). Bundled together as
+one deployment unit, a so-called Enterprise Archive (EAR) was created.
+
+It’s pretty clear that enterprise projects contain challenges on varying levels. And going
+through the last 5 to 10 years of evolution in this field, it is obvious that the technical 
+challenges haven’t been the only ones.
+
+## **Designing Software for a Scalable Enterprise**
+The main point is to not even consider using a microservices architecture unless you have a 
+system that’s too large and complex to be built as a classical monolith. As a result, the 
+majority of modern software systems should still be built as a single application that is 
+modular and takes advantage of state-of-the-art software architecture patterns.
+
+As we have been building complex enterprise systems in Java EE for years, it may seem unlikely
+that we will find one suitable for a microservices architecture. But this is not the complete 
+truth: technical or business complexity should not be the only reason for choosing this kind 
+of architecture. 
+
+One of the most important concerns in the current developer environment is team size. With
+growing developer teams, it seems more reasonable and effective to have completely decoupled 
+services. But there aren’t any hard metrics or even estimates about complexity that make a
+decision easy. The best way to decide which route to pursue will be the overall setting. 
+This starts with the decision about which software system needs to be worked on.
+
+### **Domain-Driven Design**
+The philosophy of domain-driven design (DDD) is about placing the attention at the heart of
+the application, focusing on the complexity of the core business domain. Alongside the core 
+business features, you’ll also find supporting subdomains that are often generic in nature, 
+such as money or time. DDD aims to create models of a problem domain. All the implementation
+details—like persistence, user interfaces, and messaging—come later. The most crucial thing 
+to understand is the domain, because this is what a majority of software design decisions are
+going to be based on. DDD defines a set of concepts that are selected to be implemented in 
+software, and then represented in code and any other software artifact used to construct the 
+final system.
+
+Working with a model always happens within a context. It can vary between different 
+requirements or just be derived, for example, from the set of end users of the final system.
+The chosen context relates to the concepts of the model in a defined way. In DDD, this is
+called the bounded context (BC). Every domain model lives in precisely one BC, and a BC 
+contains precisely one domain model. A BC helps to model and define interactions between the
+BC and the model in many ways. The ultimate mapping for the model is the inside view of the 
+one related BC.
+
+### **Service Characteristics**
+For a first migration assessment, it is helpful to identify and separate the services into
+categories by looking at some key characteristics. It is recommended to only use them in a 
+first round of qualification for a potential microservices migration and not as a design or 
+refactoring methodology. Let’s discuss the most important ones in the following subsections.
+
+#### Core Services
+Core services follow the definition of domain services and expose a specific domain entity, 
+including all relevant base operations, directly to a consumer. If you don’t have a domain 
+model, you can watch out for entities named after nouns. Another good starting point is a use
+case or user story. You can even find a lot of examples from common business processes, such as:
+
+* Order 
+* Shipping 
+* Catalog 
+* User 
+* Customer
+
+#### Process Services
+Process services follow the business services definition and are responsible for performing a
+single, complex task. They usually represent a business action or process related to and 
+relying on one or more core services. Finding the right partition without a domain model is
+time-consuming and needs to be thought through before implementing. Try to keep the focus on 
+the different business capabilities of a system. Respect the already-known drawbacks from 
+traditional architectures, and keep the network latency and number of hops in mind. It might 
+be easier to verbalize a process service by putting its mission statement up front, such as
+the following:
+
+* This service lists similar courses for a given course. 
+* This service places an order for a customer. 
+* This service reroutes a shipment. 
+* This service logs an order step for a customer.
+
+### **Microservices Best Practices**
+
+#### Design for Automation
+Continuous delivery (CD) is a software engineering approach where teams produce usable 
+software in short cycles while ensuring that they can be reliably released at any time. It 
+is used in software development to automate and improve the process of software delivery. CD 
+is a complex and comprehensive enough topic to take up volumes and not just a few paragraphs. 
+However, the idea behind continuous delivery provides the mechanism by which the innovation 
+cycle for microservices-based applications can operate. The principle of continuous delivery
+that is most relevant here is the ability to deploy rapidly into production, shortening the 
+cycle time between an idea and feedback on the value of the idea.
+
+Achieving rapid deployment requires many continuous delivery techniques, including
+infrastructure automation, build automation, deployment and rollback automation, data 
+migration automation, and (of course) test automation. Each of these techniques is necessary 
+to support the rapid development of new features, rapid testing of the new system, safe and 
+rapid deployment of the application into production, and safe and rapid rollback in case the 
+system isn’t working as expected or if the feature turns out to be a bad idea.
+
+#### Design for Failure
+The premium standard for high availability is five 9s, which stands for a guaranteed uptime 
+of 99.999%. Over the course of a complete year, that means just five and a half minutes of 
+downtime. Traditional approaches often use the words “reliability” and “preventing failure” 
+interchangeably. But cloud-based microservices architectures are completely different.
+
+A first line of defense is load balancing based on service-level agreements (SLAs). Every 
+microservice needs a defined set of metadata that allows you to find out more information 
+about utilization and average response times. Depending on thresholds, services should be 
+scaled automatically, either horizontally (add more physical machines) or vertically (add
+more running software instances to one machine).
+
+_Retry on failure_ 
+
+This pattern enables the application to handle anticipated, temporary failures when it
+attempts to connect to a service by transparently retrying an operation that has previously 
+failed in the expectation that the cause of the failure is transient. You may implement the 
+retry pattern with or without a dynamic and configurable number of retries or just stick to a
+fixed number based on service metadata. The retries can be implemented as synchronous, 
+blocking, or asynchronous nonblocking, and there are a couple of libraries available to help 
+you with the implementation.
+
+_Circuit breaker_
+
+The circuit breaker handles faults that may take a variable time to connect to a remote 
+service. It acts as a proxy for operations that are at risk to fail. The proxy monitors the 
+number of recent failures, and then uses this information to decide whether to allow the
+operation to proceed or simply return an exception immediately.
+
+_Bulkheads_
+
+As bulkheads prevent a ship from going down in real life, the name stands for partitioning 
+your system and making it failure-proof. If this is done correctly, you can confine errors to 
+one area as opposed to taking the entire system down. Partitions can be completely different
+things, ranging from hardware redundancy, to processes bound to certain CPUs, to segmentation 
+of dedicated functionality to different server clusters.
+
+Timeouts Unlike endlessly waiting for a resource to serve a request, a dedicated timeout leads
+to signaling a failure early. This is a very simplistic form of the retry or circuit breaker 
+and may be used in situations when talking to more low-level services.
+
+#### Design for Data Separation
+The first approach is to make all the systems independent. This is a common approach with
+microservices because it enables decoupled services. But you will have to implement the code 
+that makes the underlying data consistent. This includes handling of race conditions, 
+failures, and consistency guarantees of the various data stores for each service. This will 
+be easier while you’re looking at domain services, and becomes harder and more complex with 
+growing dependencies to other services. You will need to explicitly design for integrity.
+
+#### Design for Integrity
+
+**Use transactions**
+
+It is a common misunderstanding that microservices-based architectures can’t have or use 
+transactions at all. There are plenty of ways to use atomic or extended transactions with 
+different technologies that consider themselves part of the modern software stack. Examples
+of technologies range from server-supported transaction managers, to OMG’s Additional 
+Structuring Mechanisms for the OTS and WS-Transactions from OASIS, to even vendor-specific
+solutions like REST-AT. Implementing equivalent capabilities in your infrastructure or the
+services themselves (e.g., consistency in the presence of arbitrary failures, opaque recovery 
+for services, modular structuring mechanisms, and spanning different communication patterns) 
+is something you should consider very carefully.
+
+**Separate reads from writes**
+
+If you don’t want to look into transactions first thing, you might want to reduce the
+complexity by just separating read-only services from write-only services. Given that a 
+significant portion of services will only read the underlying domain objects instead of 
+modifying them, it will be easier to separate services by this attribute to reduce the number
+of compensation actions you might have to take.
+
+**Event-driven design**
+
+Another approach to transactions is the event-driven design of services. This requires some 
+logic to record all writes of all services as a sequence of events. By registering and
+consuming this event series, multiple services can react to the ordered stream of events and
+do something useful with it. The consuming services must be responsible and able to read the 
+events at their own speed and availability. This includes a tracking of the events to be able
+to restart consumption after a particular service goes down. With the complete write history 
+as an events database, it would also be possible to add new services at a later stage and let
+them work through all the recorded events to add their own useful business logic.
+
+**Use transaction IDs**
+
+Another variant is to correlate combined service calls with transaction IDs. By adding a 
+transaction ID into the payload, the subsequent service calls are able to identify 
+long-running transactional requests. Until all services successfully pass all contained
+transactions, the data modification is only flagged and a second (asynchronous) service call
+is needed to let all contributing services know about the successful outcome. As this
+significantly raises the number of requests in a system, it is only a solution for very rare
+and complex cases that need full consistency while the majority of services can run without it.
+
+#### Design for Performance
+
+**Load-test early, load-test often**
+
+Performance testing is an essential part of distributed applications. This is even more
+important with new architectures. You need to make sure that the performance of the complete 
+system is actively tested and individual services perform as they’ve been tested in 
+development already.
+
+**Use the right technologies for the job**
+
+The usual approach is to base all your endpoints on RESTful calls. As a matter of fact, this
+might not be the only feasible solution for your requirements. The often-preached, one-to-one 
+relationship between HTTP-based RESTful services and microservices architectures isn’t cast 
+in stone. Everything about endpoint technologies, interface architecture, and protocols can be
+put to the test in enterprise environments. 
+
+Some services will be better off communicating via synchronous or asynchronous messaging, but
+others will be ideally implemented using RESTful endpoints communicating over HTTP. There may
+even be some rare instances that require the use of even more low-level service interfaces based 
+on older remoting technologies.
+
+**Use API gateways and load balancers**
+Another important aspect is API versioning and management. As we don’t have to control a
+complete monolithic deployment anymore, it is even more attractive to use explicit versioning 
+on the service APIs and endpoints. There are different API management solutions out there, and
+these come with all kinds of complexity ranging from simple frameworks and best practices to 
+complete products, which have to be deployed as part of the product.
+
+When you are going to use RESTful services, you have to use an API gateway at minimum. It will
+help you to keep track of various aspects of your interfaces. Most importantly, they allow you
+to dispatch based on service versions, and most of them offer loadbalancing features. 
+
+Besides monitoring, versioning, and load balancing, it is also important to keep track of the
+individual number of calls per service and version. This is the first step to actually 
+acquiring a complete SLA overview and also tracking down issues with service usage and
+bottlenecks. Outside performance-relevant topics, API gateways and management solutions offer
+a broad range of additional features, including increased governance and security.
+
+**Use caches at the right layer**
+
+Caching is the most important and performance-relevant part of microservices architectures. 
+There are basically two different kinds of data in applications: the type that can be heavily
+cached, and the type that should never be cached. The latter is represented by constantly 
+refreshing data streams (e.g., stock information) or by secure, personalized, or critical 
+information (e.g., credit card or medical data). Everything else can be heavily cached on
+different levels.
+
+### **Independently Deployable and Fully Contained**
+A microservices architecture will make it easier to scale development. With this technology,
+there is no large team of developers responsible for a large set of features or individual
+layers of the monolith. However, with constantly shifting team setups and responsibilities 
+for developers comes another requirement: services need to be independently deployable. 
+
+Teams are fully responsible for everything from implementation to commissioning and this
+requires that they are in full control of the individual services they are touching. Another 
+advantage is that this design pattern supports fault isolation. If every service ideally comes
+with its own runtime, there is no chance a memory leak in one service can affect other services.
+
+### **Crosscutting Concerns**
+Crosscutting concerns typically represent key areas of your software design that do not 
+relate to a specific layer in your application. In a domain-driven design approach, this
+shouldn’t happen. But you really want crosscutting concerns to be reusable non-domain-related 
+concerns that aren’t scattered around the whole project. This is where design concepts like 
+dependency injection (DI) and aspect-oriented programming (AOP) can be used to complement
+object-oriented design principles to minimize tight coupling, enhance modularity, and better
+manage the crosscutting concerns.
+
+#### Security
+Security in microservices applications breaks down into three different levels.
+
+First, is _application-level_ security. Think about an authorized user who belongs to a role 
+and has to access the entry point of the system. The application will present a login service 
+that a user has to access. Based on the outcome of this service, if it is a username/password,
+a client-cert, a two-factor authentication, or a social media login, a “credential” has to be 
+issued, which will be used further downstream and passed to all the involved components in 
+this user session.
+
+The next level is the _user-level_ security. It maps the credential or token in a downstream
+service to a user (and/or his personal information) and gathers the relevant service-specific 
+roles. There are basically two different approaches here: pack the needed downstream 
+information into the credential/token, or gather it when needed.
+
+Last but not least, there is _network-level_ security. Network-level security is typically the
+most important layer in enterprise scenarios. With penetration tests and other related
+security scans of applications, you have to implement a solution that doesn’t allow malicious 
+requests to even reach your service endpoints without prior accreditation. Additionally, it 
+might be feasible to also train an application security manager (ASM) solution with the 
+allowed and wanted requests for your externally available services.
+
+#### Logging
+Although logging in typical enterprise environments only has to fulfill a few basic needs 
+(such as developer support, debugging in production, and business transaction logging), the
+nature of a distributed system requires a lot more. Because one service request can be split 
+out to many subsequent requests and produce an error somewhere downstream, logging 
+should be able to follow the complete request path down to the error. This might be done with
+unique service request IDs or even with the help of an HttpSession or SSL session ID 
+(captured at the entry service). And all the distributed logging sources need to be collected
+in a single application-wide log.
+
+#### Health Checks
+Health checks are an important part of DevOps. Every part needs to be controlled and monitored
+from the very beginning. Besides, just having a simple “is-alive” servlet, the need for more 
+sophisticated health checks on a service level arises when using a microservices architecture.
+
+However, there are different ways of approaching this requirement. A simple approach is to 
+select an API management solution that not only deals with governance and load balancing but
+also handles the SLA and implicit health monitoring of every service. Although this is 
+strongly recommended, there are plenty of other solutions starting from custom implementations
+up to more complex monitoring approaches.
+
+#### Integration Testing
+While integration testing for Java EE applications has always been important but complex, it 
+is even harder for microservices-based, distributed systems. As usual, testing begins with 
+the so-called module or developer tests. Typically, running on a single developer machine, 
+integration tests for distributed systems require the presence of all downstream services. 
+With everything completely automated, this also includes controlling the relevant containers
+with the dependent services. Although mocking and tests based on intelligent assumptions were 
+best practices a couple of years back, today’s systems have to be tested with all the involved
+services at the correct version.
+
+First and foremost, this requires a decent infrastructure, including complete test and
+integration systems for the various teams. If you’re coming from a traditional enterprise 
+development environment, it might feel odd to exceed the existing five different test stages 
+and corresponding physical machines. But working with microservices and being successful in 
+enterprise settings will require having a PaaS offering, which can spin up needed instances 
+easily and still be cost-effective.
+
+## **Java EE and Microservices**
+Most Java EE APIs are synchronous, and scaling these resources is done through thread pools. 
+Of course, this has its limits and is not meant to be adjusted for quickly changing
+requirements or excessive load situations. Given these requirements, it appears as if Java
+EE isn’t the best choice for developing microservices-based architectures.
+
+There are a lot of technologies that barely offer any advantages to microservices-based
+architectures, such as the Java Connector Architecture or the Batch Processing API. If you 
+are starting to build microservices architectures on top of Java EE, make sure to look at the
+asynchronous features and try to use the best available parts. One important item to keep in
+mind: Java EE was never built to work with distributed applications or microservices. So every
+decision and line of code should be carefully inspected and validated to maximize asynchronicity.
+
+### **Migration Approaches**
+
+#### Selective Improvements 
+The most risk-free approach is using selective improvements. After the initial assessment, you
+know exactly which parts of the existing application can take advantage of a microservices 
+architecture. By scraping out those parts into one or more services and adding the necessary
+glue to the original application, you’re able to scale out the microservices in multiple steps:
+
+* First, as a separate deployment in the same application server cluster or instance
+* Second, on a separately scaled instance 
+* And finally, using a new deployment and scaling approach by switching to a “fat JAR” container
+
+There are many advantages to this approach. While doing archaeology on the existing system, 
+you’ll receive a very good overview about the parts that would make for ideal candidates. 
+And while moving out individual services one at a time, the team has a fair chance to adapt 
+to the new development methodology and make its first experience with the technology stack 
+a positive one.
+
+#### The Strangler Pattern
+Comparable but not equal is the second approach where you run two different systems in
+parallel. First coined by Martin Fowler as the StranglerApplication, the refactor/extraction 
+candidates move into a complete new technology stack, and the existing parts of the 
+applications remain untouched. A load balancer or proxy decides which requests need to reach
+the original application and which go to the new parts. There are some synchronization issues 
+between the two stacks. Most importantly, the existing application can’t be allowed to change 
+the microservices' databases.
+
+#### Big Bang: Refactor an Existing System
+In very rare cases, complete refactoring of the original application might be the right way 
+to go. It’s rare because enterprise applications will need ongoing maintenance during the
+complete refactoring. What’s more, there won’t be enough time to make a complete stop for a
+couple of weeks—or even months, depending on the size of the application—to rebuild it on a
+new stack. This is the least recommended approach because it carries a comparably high risk 
+of failure.
+
+## **Microservices Design Pattern**
+Functional decomposition of an application with the help of DDD is a prerequisite for 
+building a microservices architecture. Only this approach allows you to effectively design for
+loose coupling and high cohesion. Even if you go with the much simpler service characteristics,
+you’ll still be able to decompose already existing applications. However, unlike with 
+applications, which are tied together by the frontend, microservices can interact with each
+other and span a network of service calls. To keep the variety of interactions comprehensible 
+and maintainable, a first set of patterns have emerged that will help you to model the service
+interaction.
+
+### **Common Principles**
+
+#### To Avoid Trunk Conflict, Each Microservice Is Its Own Build
+Conduct a separate build for each microservice. One reason for this is that teams can be 
+fully responsible for putting new versions into production. It also enables the team to use 
+the needed downstream services at the correct revision by querying the repository.
+
+#### The Business Logic Is Stateless
+Treat the logic in your services as stateless. Needing to replicate state across various 
+services is a strong indicator of a bad design. Services are fully contained and independent
+and should be able to work without any prepopulated state.
+
+#### The Data Access Layer Is Cached
+In order to keep service response times to a minimum, you should consider data caching 
+in every service you build.
+
+#### Create a Separate Data Store for Each Microservice
+Each microservice needs to be as independent as possible, that includes data.
+
+### **Aggregator Pattern**
+The most simplistic pattern used with microservices is the aggregator pattern. It is already
+well known from the Enterprise Integration pattern catalog and has proven to be useful outside
+microservices architecture. The primary goal of this pattern is to act as a special filter 
+that receives a stream of responses from service calls and identifies or recognizes the
+responses that are correlated. Once all the responses have been collected, the aggregator
+correlates them and publishes a single response to the client for further processing.
+
+In its most basic form, aggregator is a simple, single-page application (e.g., JavaScript,
+AngularJS) that invokes multiple services to achieve the functionality required by a 
+certain use case. Assuming all three services in this example are exposing a REST interface, 
+the application simply consumes the data and exposes it to the user. The services in this 
+example should be application services (compare above) and do not require any additional 
+business logic in the frontend. If they represent domain services, they should be called by 
+an application service first and brought into a representable state.
+
+The endpoints don’t necessarily have to be REST based. It is totally valid to use different 
+protocols. Because the aggregator is another business service heavily accessing asynchronous
+domain services, it uses a message-driven approach with the relevant protocols on top 
+(e.g., JMS).
+
+### **Proxy Pattern**
+The proxy pattern allows you to provide additional interfaces to services by creating a
+wrapper service as the proxy. The wrapper service can add additional functionality to the 
+service of interest without changing its code.
+
+The proxy may be a simple pass-through proxy, in which case it just delegates the request to
+one of the proxied services. It is usually called a smart proxy when additional logic is 
+happening inside the proxy service. The applicable logic varies in complexity and can range
+from simple logging to adding a transaction. If used as a router, it can also proxy requests 
+to different services by parameter or client request.
+
+### **Pipeline Pattern**
+In more complex scenarios, a single request triggers a complete series of steps to be
+executed. In this case, the number of services that have to be called for a single response 
+is larger than one. Using a pipeline of services allows the execution of different operations 
+on the incoming request. A pipeline can be triggered synchronously or asynchronously, although
+the processing steps are most likely synchronous and rely on each other. But if the services 
+are using synchronous requests, the client will have to wait for the last step in the
+pipeline to be finished.
+
+Chains shouldn’t exceed a certain amount of time if called synchronously. As a general rule 
+of thumb, according to usability studies, one-tenth of a second is about the limit for having
+the user feel that the system is reacting instantaneously. One second is about the limit for 
+the user’s flow of thought to stay uninterrupted, even though the user will notice the delay. 
+Normally, no special feedback is necessary during delays of more than 0.1 but less than 1.0 
+second, but the user does lose the feeling of operating directly on the data. Ten seconds is 
+about the limit for keeping the user’s attention focused on the dialogue.
 
 # **The Path to Cloud Native Java**
 
